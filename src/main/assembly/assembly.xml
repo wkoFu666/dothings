@@ -1,0 +1,47 @@
+<assembly>
+    <!-- 这里appendAssemblyId 已经为false不生效-->
+    <id>logo</id>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <!-- 最终打包成一个用于发布的zip文件 -->
+    <formats>
+        <format>tar.gz</format>
+    </formats>
+    <dependencySets>
+        <dependencySet>
+            <!-- 不使用项目的artifact，第三方jar不要解压，打包进zip文件的lib目录-->
+            <useProjectArtifact>false</useProjectArtifact>
+            <outputDirectory>${unzip.name}/lib</outputDirectory>
+            <unpack>false</unpack>
+        </dependencySet>
+    </dependencySets>
+
+    <fileSets>
+        <!-- 将package中的文件打包放入unzip目录下-->
+        <fileSet>
+            <directory>${basedir}/package</directory>
+            <includes>
+                <include>globe.common.conf</include>
+                <include>install.sh</include>
+                <include>install_config.sh</include>
+            </includes>
+            <outputDirectory>${unzip.name}/</outputDirectory>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}/classes</directory>
+            <outputDirectory>${unzip.name}/conf</outputDirectory>
+            <includes>
+                <include>*.properties</include>
+                <include>**/*.properties</include>
+                <include>*.xml</include>
+                <include>**/*.xml</include>
+            </includes>
+        </fileSet>
+        <fileSet>
+            <directory>${project.build.directory}</directory>
+            <outputDirectory>${unzip.name}/</outputDirectory>
+            <includes>
+                <include>*.jar</include>
+            </includes>
+        </fileSet>
+    </fileSets>
+</assembly>
