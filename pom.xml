@@ -12,15 +12,49 @@
     <artifactId>dothings</artifactId>
     <version>1.0.0</version>
     <name>dothings</name>
-    <description>Demo project for Spring Boot</description>
+    <packaging>jar</packaging>
     <properties>
-        <maven.build.timestamp.format>yyyyMMdd</maven.build.timestamp.format>
-        <unzip.name>${project.artifactId}_install_${project.version}</unzip.name>
-        <install.filename>
-            ${project.artifactId}-${project.version}-allsystem-${maven.build.timestamp}
-        </install.filename>
-        <java.version>1.8</java.version>
+        <!-- 编译时的编码 -->
+        <maven.compiler.encoding>UTF-8</maven.compiler.encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
+        <mvn.packageName>${project.artifactId}-${project.version}</mvn.packageName>
+        <boot.main>com.wko.dothings.DoThingsApplication</boot.main>
     </properties>
+
+    <profiles>
+        <profile>
+            <id>dev</id>
+            <properties>
+                <!--传递给脚本的参数值-->
+                <activeProfile>dev</activeProfile>
+                <package-name>${mvn.packageName}</package-name>
+                <boot-main>${boot.main}</boot-main>
+            </properties>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
+        <profile>
+            <id>prod</id>
+            <properties>
+                <activeProfile>prod</activeProfile>
+                <package-name>${mvn.packageName}</package-name>
+                <boot-main>${boot.main}</boot-main>
+            </properties>
+        </profile>
+        <profile>
+            <id>test</id>
+            <properties>
+                <activeProfile>test</activeProfile>
+                <package-name>${mvn.packageName}</package-name>
+                <boot-main>${boot.main}</boot-main>
+            </properties>
+        </profile>
+    </profiles>
+
+
     <dependencies>
         <dependency>
             <groupId>com.alibaba</groupId>
@@ -82,14 +116,7 @@
             <artifactId>fastjson</artifactId>
             <version>2.0.1</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <version>3.0.0</version>
-        </dependency>
-
     </dependencies>
-
     <build>
         <resources>
             <!-- 控制资源文件拷贝 -->
@@ -98,12 +125,20 @@
                 <targetPath>${project.build.directory}/classes</targetPath>
                 <filtering>true</filtering>
                 <includes>
-                    <include>**/*.xml</include>
-                    <include>**/*.properties</include>
+                    <include>static/**</include>
+                    <include>templates/**</include>
+                    <include>mybatis/**</include>
+                    <include>logconfig/**</include>
                 </includes>
             </resource>
+
+            <resource>
+                <directory>src/main/profiles/${activeProfile}</directory>
+            </resource>
+
         </resources>
 
+        <finalName>${mvn.packageName}</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -121,29 +156,32 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.0.0</version>
+                <!-- The configuration of the plugin -->
                 <configuration>
+                    <!-- Configuration of the archiver -->
                     <archive>
                         <!-- 生成的jar中，不要包含pom.xml和pom.properties这两个文件 -->
                         <addMavenDescriptor>false</addMavenDescriptor>
+                        <!-- Manifest specific configuration -->
                         <manifest>
                             <!-- 是否要把第三方jar放到manifest的classpath中 -->
                             <addClasspath>true</addClasspath>
                             <!-- 生成的manifest中classpath的前缀，因为要把第三方jar放到lib目录下，所以classpath的前缀是lib/ -->
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.wko.dothings.DoThingsApplication</mainClass>
+                            <!-- 应用的main class -->
+                            <mainClass>${boot.main}</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
             </plugin>
+
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>3.1.0</version>
                 <configuration>
-                    <finalName>${install.filename}</finalName>
-                    <appendAssemblyId>false</appendAssemblyId>
                     <descriptors>
-                        <descriptor>src/main/assembly/assembly.xml</descriptor>
+                        <descriptor>src/main/package/assembly.xml</descriptor>
                     </descriptors>
                 </configuration>
                 <executions>
@@ -157,5 +195,6 @@
                 </executions>
             </plugin>
         </plugins>
+
     </build>
 </project>
